@@ -1,16 +1,3 @@
-// 🚀 Caption Studio Final Engine (Groq + 9 Gemini Keys Rotator)
-const GEMINI_KEYS = [
-    "AIzaSyDeaaDZ13wrh7_n_CcWsw8wpLpBFiMLOxs",
-    "AIzaSyCkUNwmyavUgnUU8psGBkloJLPyPu9TRKA",
-    "AIzaSyA96EoEYepe3XyCNNkX7LOb3FeBJCbjeiI",
-    "AIzaSyCTUMu70LRqN7XPl3QViITrr-q7H8WHO60",
-    "AIzaSyDKbz8LZpStqFqEgcEjI2FVwzuVxoD6FiQ",
-    "AIzaSyC-5745w1pLYKzWdPoevI3j9YyleHuRJb0",
-    "AIzaSyAPWQPcdugDOzwwGFBgvmcT1kIVwp95yx8",
-    "AIzaSyBYTMwt-BbQ99rzGq9YLx3hyvs0uoHrP-M",
-    "AIzaSyAI_dEagK8afxlVAsQ2Yf284xPOtaX6xyQ"
-];
-
 export default async function handler(req, res) {
     // 1. CORS Headers Setup
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -21,6 +8,10 @@ export default async function handler(req, res) {
 
     const { topic } = req.body;
     if (!topic) return res.status(400).json({ error: "Topic is required" });
+
+    // 2. Load Keys from Vercel Environment Variables (Safe Method)
+    const keys_string = process.env.GEMINI_KEYS || "";
+    const GEMINI_KEYS = keys_string.split(",").map(k => k.trim()).filter(k => k !== "");
 
     try {
         // --- STEP 1: TRY GROQ (Super Fast Primary Engine) ---
@@ -52,10 +43,11 @@ export default async function handler(req, res) {
     } catch (error) {
         // --- STEP 2: TRY GEMINI ROTATOR (The Power Backup) ---
         try {
+            if (GEMINI_KEYS.length === 0) throw new Error("No Gemini Keys found");
+
             const keyIndex = Math.floor(Math.random() * GEMINI_KEYS.length);
             const selectedKey = GEMINI_KEYS[keyIndex];
             
-            // Using the "BINGO" tested model: Gemini 3.1 Flash Lite
             const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent?key=${selectedKey}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -74,14 +66,14 @@ export default async function handler(req, res) {
                 const result = JSON.parse(geminiData.candidates[0].content.parts[0].text);
                 return sendRes(res, result, `Gemini Flash Slot #${keyIndex + 1} ✨`);
             } else {
-                throw new Error("Gemini Key Busy");
+                throw new Error("Gemini Key Busy or Invalid");
             }
 
         } catch (geminiError) {
             // --- FINAL FALLBACK: If everything fails ---
             const emergencyResult = {
-                caption: `Full power mode: ${topic}! 🔥 Har din naya swag. #${topic.replace(/\s+/g, '')} #Gorakhpur53 #Trending`,
-                tip: "Trending audio use karo for 2x reach!"
+                caption: `Full power mode: ${topic}! 🔥 Stay ahead of the trend. #${topic.replace(/\s+/g, '')} #Gorakhpur53 #Trending`,
+                tip: "Trending reel music use karo for 2x reach!"
             };
             return sendRes(res, emergencyResult, "Emergency System 🔄");
         }
