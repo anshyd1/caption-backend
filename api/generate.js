@@ -1,12 +1,19 @@
 export default async function handler(req, res) {
-    if (req.method !== 'POST') return res.status(405).json({ error: 'Only POST allowed' });
+    // CORS Headers for Localhost support
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+    res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
+
+    if (req.method === 'OPTIONS') return res.status(200).end();
+    if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
 
     const { topic, category } = req.body;
     
-    // Growth-Focused Prompt for 100k Followers Strategy
-    const prompt = `Write ONE viral Hinglish Instagram caption for: "${topic}". Style: ${category || 'Viral'}. Provide ONE short growth tip. Output as JSON: {"caption": "...", "tip": "..."}`;
+    // Growth-Focused Prompt
+    const prompt = `Write ONE viral Hinglish Instagram caption for: "${topic}". Category: ${category || 'Viral'}. Ignore nonsense. Also provide ONE short growth tip. Output ONLY JSON: {"caption": "...", "tip": "..."}`;
 
-    // ENGINE 1: GROQ
+    // --- ENGINE 1: GROQ ---
     try {
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
@@ -19,30 +26,30 @@ export default async function handler(req, res) {
         });
         const data = await response.json();
         if (data.choices) return sendRes(res, JSON.parse(data.choices[0].message.content), "Groq Engine ⚡");
-    } catch (e) { console.log("Groq Engine Down"); }
+    } catch (e) { console.log("Groq Down"); }
 
-    // ENGINE 2: GEMINI (Backup)
+    // --- ENGINE 2: GEMINI (Backup) ---
     try {
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_KEY}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ contents: [{ parts: [{ text: prompt + " (Return JSON only)" }] }] })
+            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
         });
         const data = await response.json();
         const text = data.candidates[0].content.parts[0].text.replace(/```json|```/g, "").trim();
         return sendRes(res, JSON.parse(text), "Gemini AI ✨");
-    } catch (e) { console.log("Gemini Engine Down"); }
+    } catch (e) { console.log("Gemini Down"); }
 
-    // ENGINE 3: HUGGING FACE (Final Fallback)
+    // --- ENGINE 3: HF (Fallback) ---
     try {
         const response = await fetch("https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2", {
             method: "POST",
             headers: { "Authorization": `Bearer ${process.env.HF_KEY}`, "Content-Type": "application/json" },
             body: JSON.stringify({ inputs: prompt })
         });
-        return sendRes(res, { caption: "Mehnat rang layegi! 🚀", tip: "Consistently post at 6 PM." }, "HF Engine 🤗");
+        return sendRes(res, { caption: "Viral vibes only! 🚀 #Growth", tip: "Consistent raho bhai." }, "Mistral 🤗");
     } catch (e) {
-        res.status(500).json({ error: "All engines busy" });
+        res.status(500).json({ error: "All Engines Busy" });
     }
 }
 
