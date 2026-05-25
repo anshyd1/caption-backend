@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ClipSide Tool</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+
+  <!-- ✅ DEMO AREA - User apna content yahan likhega -->
+  <div class="main-content">
+    <div class="demo-card">
+      <h1>📋 ClipSide Tool</h1>
+      <p>Side button dabao, panel slide hoga. Text select karo aur Copy/Cut/Paste karo!</p>
+      <textarea id="demoBox" placeholder="Yahan kuch likho ya paste karo...">
+Ye ek sample text hai. Isko select karke Copy ya Cut try karo!
+GitHub pe deploy karo aur mobile pe bhi use karo.
+      </textarea>
+      <div class="second-box">
+        <label>📥 Paste Test Area:</label>
+        <textarea id="pasteBox" placeholder="Yahan paste karke dekho..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ FLOATING SIDE TAB BUTTON -->
+  <div class="side-tab" id="sideTab" onclick="togglePanel()">
+    <i class="fa fa-scissors"></i>
+    <span>CLIP</span>
+  </div>
+
+  <!-- ✅ SLIDE OUT PANEL -->
+  <div class="side-panel" id="sidePanel">
+    <div class="panel-header">
+      <span>⚡ ClipSide</span>
+      <button class="close-btn" onclick="togglePanel()">✕</button>
+    </div>
+
+    <!-- ACTION BUTTONS -->
+    <div class="btn-group">
+      <button class="tool-btn copy-btn" onclick="copyText()">
+        <i class="fa fa-copy"></i><br/>Copy
+        <kbd>Ctrl+C</kbd>
+      </button>
+      <button class="tool-btn cut-btn" onclick="cutText()">
+        <i class="fa fa-scissors"></i><br/>Cut
+        <kbd>Ctrl+X</kbd>
+      </button>
+      <button class="tool-btn paste-btn" onclick="pasteText()">
+        <i class="fa fa-paste"></i><br/>Paste
+        <kbd>Ctrl+V</kbd>
+      </button>
+      <button class="tool-btn select-btn" onclick="selectAll()">
+        <i class="fa fa-object-group"></i><br/>Select All
+        <kbd>Ctrl+A</kbd>
+      </button>
+    </div>
+
+    <!-- CLIPBOARD PREVIEW -->
+    <div class="clip-preview">
+      <label>📋 Clipboard Preview:</label>
+      <div class="preview-box" id="previewBox">
+        <em>Kuch copy karo yahan dikhega...</em>
+      </div>
+    </div>
+
+    <!-- CLIPBOARD HISTORY -->
+    <div class="history-section">
+      <div class="history-header">
+        <label>🕓 History</label>
+        <button class="clear-btn" onclick="clearHistory()">Clear</button>
+      </div>
+      <div class="history-list" id="historyList">
+        <p class="no-history">Abhi koi history nahi...</p>
+      </div>
+    </div>
+
+    <!-- QUICK TOOLS -->
+    <div class="quick-tools">
+      <label>🔧 Quick Tools</label>
+      <div class="quick-btns">
+        <button onclick="toUpperCase()">UPPER</button>
+        <button onclick="toLowerCase()">lower</button>
+        <button onclick="clearActive()">🗑 Clear</button>
+        <button onclick="copyAll()">Copy All</button>
+      </div>
+    </div>
+
+    <!-- STATUS BAR -->
+    <div class="status-bar" id="statusBar">Ready ✅</div>
+  </div>
+
+  <!-- OVERLAY -->
+  <div class="overlay" id="overlay" onclick="togglePanel()"></div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
